@@ -42,3 +42,23 @@ func Test_SearchTracks(t *testing.T) {
 	})
 
 }
+
+func Test_GetTrackById(t *testing.T) {
+	c, err := NewClient()
+	assert.NoError(t, err)
+
+	t.Run("with valid id", func(t *testing.T) {
+		id := 98081145 // Martin Garrix - Animals
+		res, err := c.GetTrackById(context.Background(), id)
+		assert.NoError(t, err)
+		assert.Equal(t, res.ID, id)
+		assert.Contains(t, res.Title, "Animals")
+		assert.NotEmpty(t, res.Transcodings)
+	})
+
+	t.Run("with invalid id", func(t *testing.T) {
+		id := 0
+		_, err := c.GetTrackById(context.Background(), id)
+		assert.ErrorContains(t, err, "invalid id")
+	})
+}

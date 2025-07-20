@@ -59,6 +59,32 @@ func (c *Client) SearchTracks(ctx context.Context, q string, opts ...SearchOptio
 	return c.searchTracks(ctx, q, options)
 }
 
+// GetTrackById
+func (c *Client) GetTrackById(ctx context.Context, id int) (Track, error) {
+	req, err := c.buildRequest(ctx, fmt.Sprintf("tracks/%d", id), nil)
+	if err != nil {
+		return Track{}, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return Track{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return Track{}, fmt.Errorf("invalid id")
+	}
+
+	apiResponse := new(trackAPIResponse)
+	err = json.NewDecoder(resp.Body).Decode(apiResponse)
+	if err != nil {
+		return Track{}, err
+	}
+
+	return apiResponse.toTrack(), nil
+}
+
 func (c *Client) searchTracks(ctx context.Context, q string, opts *searchOptions) (SearchTracksResults, error) {
 	q = strings.TrimSpace(q)
 	if len(q) == 0 {
