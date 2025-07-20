@@ -41,6 +41,21 @@ func Test_SearchTracks(t *testing.T) {
 		}
 	})
 
+	t.Run("with client id option", func(t *testing.T) {
+		c2, err := NewClient(WithClientID(c.clientId))
+		assert.NoError(t, err)
+
+		q := "monstercat"
+		res, err := c2.SearchTracks(context.Background(), q)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, res.Tracks)
+		assert.Equal(t, 20, len(res.Tracks))
+
+		for _, track := range res.Tracks {
+			assert.NotEmpty(t, track.Transcodings)
+		}
+	})
+
 }
 
 func Test_GetTrackById(t *testing.T) {
