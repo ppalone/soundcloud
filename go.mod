@@ -5,6 +5,7 @@ go 1.23.0
 toolchain go1.23.11
 
 require (
+	github.com/grafov/m3u8 v0.12.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/net v0.42.0
 )
