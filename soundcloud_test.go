@@ -1,21 +1,22 @@
-package soundcloud
+package soundcloud_test
 
 import (
 	"context"
 	"strings"
 	"testing"
 
+	"github.com/ppalone/soundcloud"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_NewClient(t *testing.T) {
-	c, err := NewClient()
+	c, err := soundcloud.NewClient()
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 }
 
 func Test_SearchTracks(t *testing.T) {
-	c, err := NewClient()
+	c, err := soundcloud.NewClient()
 	assert.NoError(t, err)
 
 	t.Run("without options", func(t *testing.T) {
@@ -33,7 +34,7 @@ func Test_SearchTracks(t *testing.T) {
 	t.Run("with limit", func(t *testing.T) {
 		q := "nujabes"
 		limit := 100
-		res, err := c.SearchTracks(context.Background(), q, WithLimit(limit))
+		res, err := c.SearchTracks(context.Background(), q, soundcloud.WithLimit(limit))
 		assert.NoError(t, err)
 		assert.Len(t, res.Tracks, limit)
 
@@ -43,7 +44,7 @@ func Test_SearchTracks(t *testing.T) {
 	})
 
 	t.Run("with client id option", func(t *testing.T) {
-		c2, err := NewClient(WithClientID(c.clientId))
+		c2, err := soundcloud.NewClient(soundcloud.WithClientID(c.ClientId()))
 		assert.NoError(t, err)
 
 		q := "monstercat"
@@ -60,7 +61,7 @@ func Test_SearchTracks(t *testing.T) {
 }
 
 func Test_GetTrackById(t *testing.T) {
-	c, err := NewClient()
+	c, err := soundcloud.NewClient()
 	assert.NoError(t, err)
 
 	t.Run("with valid id", func(t *testing.T) {
@@ -80,21 +81,21 @@ func Test_GetTrackById(t *testing.T) {
 }
 
 func Test_Stream(t *testing.T) {
-	c, err := NewClient()
+	c, err := soundcloud.NewClient()
 	assert.NoError(t, err)
 
 	q := "Martin Garrix Animals"
 	limit := 1
-	res, err := c.SearchTracks(context.Background(), q, WithLimit(limit))
+	res, err := c.SearchTracks(context.Background(), q, soundcloud.WithLimit(limit))
 	assert.NoError(t, err)
 	assert.Len(t, res.Tracks, limit)
 
 	track := res.Tracks[0]
 
 	t.Run("with valid hls transcoding", func(t *testing.T) {
-		var transcoding Transcoding
+		var transcoding soundcloud.Transcoding
 		for _, t := range track.Transcodings {
-			if strings.HasPrefix(t.Preset, MP3.String()) && t.Format.Protocol == HLS.String() {
+			if strings.HasPrefix(t.Preset, soundcloud.MP3.String()) && t.Format.Protocol == soundcloud.HLS.String() {
 				transcoding = t
 				break
 			}
@@ -108,9 +109,9 @@ func Test_Stream(t *testing.T) {
 	})
 
 	t.Run("with valid progressive transcoding", func(t *testing.T) {
-		var transcoding Transcoding
+		var transcoding soundcloud.Transcoding
 		for _, t := range track.Transcodings {
-			if strings.HasPrefix(t.Preset, MP3.String()) && t.Format.Protocol == PROGRESSIVE.String() {
+			if strings.HasPrefix(t.Preset, soundcloud.MP3.String()) && t.Format.Protocol == soundcloud.PROGRESSIVE.String() {
 				transcoding = t
 				break
 			}
@@ -124,7 +125,7 @@ func Test_Stream(t *testing.T) {
 	})
 
 	t.Run("with invalid progressive transcoding", func(t *testing.T) {
-		transcoding := Transcoding{
+		transcoding := soundcloud.Transcoding{
 			URL:      "https://api-v2.soundcloud.com/media/soundcloud:tracks:98081145/d27e0e2b-16e6-4fb2-b2a2-49bb6ad7e489/stream/hls", // invalid url
 			Preset:   "mp3_0_1",
 			Duration: 304300,
@@ -146,19 +147,19 @@ func Test_Stream(t *testing.T) {
 }
 
 func Test_GetStreamById(t *testing.T) {
-	c, err := NewClient()
+	c, err := soundcloud.NewClient()
 	assert.NoError(t, err)
 
 	t.Run("with valid id and available stream options", func(t *testing.T) {
 		id := 98081145
-		stream, err := c.GetStreamById(context.Background(), id, WithPreset(MP3), WithProtocol(PROGRESSIVE))
+		stream, err := c.GetStreamById(context.Background(), id, soundcloud.WithPreset(soundcloud.MP3), soundcloud.WithProtocol(soundcloud.PROGRESSIVE))
 		assert.NoError(t, err)
 		assert.NotNil(t, stream)
 	})
 
 	t.Run("with valid id and unavailable stream options", func(t *testing.T) {
 		id := 98081145
-		stream, err := c.GetStreamById(context.Background(), id, WithPreset(AAC), WithProtocol(PROGRESSIVE))
+		stream, err := c.GetStreamById(context.Background(), id, soundcloud.WithPreset(soundcloud.AAC), soundcloud.WithProtocol(soundcloud.PROGRESSIVE))
 		assert.ErrorContains(t, err, "transcoding with preset aac and protocol progressive not found for track")
 		assert.Nil(t, stream)
 	})

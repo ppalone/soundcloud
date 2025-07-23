@@ -52,6 +52,11 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	}, nil
 }
 
+// ClientId
+func (c *Client) ClientId() string {
+	return c.clientId
+}
+
 // SearchTracks
 func (c *Client) SearchTracks(ctx context.Context, q string, opts ...SearchOption) (SearchTracksResults, error) {
 	options := defaultSearchOptions()
