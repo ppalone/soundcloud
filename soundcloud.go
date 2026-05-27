@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	liburl "net/url"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -153,14 +153,14 @@ func findTranscoding(transcodings []Transcoding, preset Preset, protocol Protoco
 	return Transcoding{}, false
 }
 
-func (c *Client) downloadHLS(ctx context.Context, url string, pw *io.PipeWriter) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+func (c *Client) downloadHLS(ctx context.Context, hlsURL string, pw *io.PipeWriter) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, hlsURL, nil)
 	if err != nil {
 		pw.CloseWithError(err)
 		return
 	}
 
-	playlistURL, err := liburl.Parse(url)
+	playlistURL, err := url.Parse(hlsURL)
 	if err != nil {
 		pw.CloseWithError(err)
 		return
