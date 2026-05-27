@@ -2,6 +2,8 @@ package soundcloud_test
 
 import (
 	"context"
+	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -162,5 +164,30 @@ func Test_GetStreamById(t *testing.T) {
 		stream, err := c.GetStreamById(context.Background(), id, soundcloud.WithPreset(soundcloud.AAC), soundcloud.WithProtocol(soundcloud.PROGRESSIVE))
 		assert.ErrorContains(t, err, "transcoding with preset aac and protocol progressive not found for track")
 		assert.Nil(t, stream)
+	})
+}
+
+func Test_Download(t *testing.T) {
+	c, err := soundcloud.NewClient()
+	assert.NoError(t, err)
+
+	t.Run("with valid id and available stream options", func(t *testing.T) {
+		id := 98081145
+		opts := []soundcloud.StreamOption{
+			soundcloud.WithPreset(soundcloud.MP3),
+			soundcloud.WithProtocol(soundcloud.HLS),
+		}
+		stream, err := c.GetStreamById(context.Background(), id, opts...)
+		assert.NoError(t, err)
+		assert.NotNil(t, stream)
+
+		tmpFile, err := os.CreateTemp("", "test-*.mp3")
+		assert.NoError(t, err)
+		defer tmpFile.Close()
+
+		_, err = io.Copy(tmpFile, stream)
+		assert.NoError(t, err)
+
+		stream.Close()
 	})
 }
