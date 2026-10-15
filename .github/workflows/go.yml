@@ -1,5 +1,11 @@
 name: Go
-on: [push, workflow_dispatch]
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   build:
