@@ -156,8 +156,8 @@ func Test_GetStreamById(t *testing.T) {
 	assert.NoError(t, err)
 
 	t.Run("with valid id and available stream options", func(t *testing.T) {
-		id := 271226216
-		stream, err := c.GetStreamById(context.Background(), id, soundcloud.WithPreset(soundcloud.MP3), soundcloud.WithProtocol(soundcloud.PROGRESSIVE))
+		id := 98081145
+		stream, err := c.GetStreamById(context.Background(), id, soundcloud.WithPreset(soundcloud.AAC), soundcloud.WithProtocol(soundcloud.HLS))
 		assert.NoError(t, err)
 		assert.NotNil(t, stream)
 	})
