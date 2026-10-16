@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/ppalone/soundcloud"
@@ -86,18 +85,14 @@ func Test_Stream(t *testing.T) {
 	c, err := soundcloud.NewClient()
 	assert.NoError(t, err)
 
-	q := "Martin Garrix Animals"
-	limit := 1
-	res, err := c.SearchTracks(context.Background(), q, soundcloud.WithLimit(limit))
-	assert.NoError(t, err)
-	assert.Len(t, res.Tracks, limit)
-
-	track := res.Tracks[0]
-
 	t.Run("with valid hls transcoding", func(t *testing.T) {
+		id := 98081145 // Martin Garrix - Animals
+		track, err := c.GetTrackById(context.Background(), id)
+		assert.NoError(t, err)
+
 		var transcoding soundcloud.Transcoding
 		for _, t := range track.Transcodings {
-			if strings.HasPrefix(t.Preset, soundcloud.MP3.String()) && t.Format.Protocol == soundcloud.HLS.String() {
+			if t.Format.Protocol == soundcloud.HLS.String() {
 				transcoding = t
 				break
 			}
@@ -111,9 +106,15 @@ func Test_Stream(t *testing.T) {
 	})
 
 	t.Run("with valid progressive transcoding", func(t *testing.T) {
+		// This one has a progressive
+		// But this my fail in future, as they may remove it
+		id := 271226216
+		track, err := c.GetTrackById(context.Background(), id)
+		assert.NoError(t, err)
+
 		var transcoding soundcloud.Transcoding
 		for _, t := range track.Transcodings {
-			if strings.HasPrefix(t.Preset, soundcloud.MP3.String()) && t.Format.Protocol == soundcloud.PROGRESSIVE.String() {
+			if t.Format.Protocol == soundcloud.PROGRESSIVE.String() {
 				transcoding = t
 				break
 			}
@@ -153,7 +154,7 @@ func Test_GetStreamById(t *testing.T) {
 	assert.NoError(t, err)
 
 	t.Run("with valid id and available stream options", func(t *testing.T) {
-		id := 98081145
+		id := 271226216
 		stream, err := c.GetStreamById(context.Background(), id, soundcloud.WithPreset(soundcloud.MP3), soundcloud.WithProtocol(soundcloud.PROGRESSIVE))
 		assert.NoError(t, err)
 		assert.NotNil(t, stream)
@@ -174,7 +175,7 @@ func Test_Download(t *testing.T) {
 	t.Run("with valid id and available stream options", func(t *testing.T) {
 		id := 98081145
 		opts := []soundcloud.StreamOption{
-			soundcloud.WithPreset(soundcloud.MP3),
+			soundcloud.WithPreset(soundcloud.AAC),
 			soundcloud.WithProtocol(soundcloud.HLS),
 		}
 		stream, err := c.GetStreamById(context.Background(), id, opts...)
