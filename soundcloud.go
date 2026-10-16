@@ -381,24 +381,27 @@ func scrapClientID(httpClient *http.Client) (string, error) {
 		return "", fmt.Errorf("no urls found in response")
 	}
 
-	resp, err = httpClient.Get(urls[len(urls)-1])
-	if err != nil {
-		return "", fmt.Errorf("error requesting url: %w", err)
-	}
-	defer resp.Body.Close()
+	for _, url := range urls {
+		resp, err = httpClient.Get(url)
+		if err != nil {
+			continue
+		}
 
-	h, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("error while reading response: %w", err)
-	}
-	body := string(h)
+		h, err := io.ReadAll(resp.Body)
+		if err != nil {
+			resp.Body.Close()
+			continue
+		}
+		resp.Body.Close()
+		body := string(h)
 
-	if strings.Contains(body, `,client_id:"`) {
-		split := strings.Split(body, `,client_id:"`)
-		if len(split) > 1 {
-			t := strings.Split(split[1], `"`)
-			if len(t) > 0 {
-				return t[0], nil
+		if strings.Contains(body, `,client_id:"`) {
+			split := strings.Split(body, `,client_id:"`)
+			if len(split) > 1 {
+				t := strings.Split(split[1], `"`)
+				if len(t) > 0 {
+					return t[0], nil
+				}
 			}
 		}
 	}
